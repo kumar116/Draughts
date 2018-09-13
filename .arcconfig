@@ -1,0 +1,10 @@
+{
+    "repository.callsign": "AC",
+    "conduit_uri": "http://phabricator.kumarsoumya.com/",
+    "linters": {
+        "text": {
+            "type": "text",
+            "text.max-line-length": 200
+        }
+    }
+}
