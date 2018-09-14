@@ -37,6 +37,13 @@ public class Panel extends JPanel {
                 g.fillRect(file * tile.getWidth(), rank * tile.getHeight(),
                         tile.getWidth(), tile.getHeight());
 
+                if (tile.isOccupied()) {
+                    Piece piece = tile.getPiece();
+                    g.setColor(piece.getColor());
+                    g.fillOval(file * piece.getWidth(), rank * piece.getHeight(),
+                            piece.getWidth(), piece.getHeight());
+                }
+
                 g.setColor(saveColor);
             }
         }

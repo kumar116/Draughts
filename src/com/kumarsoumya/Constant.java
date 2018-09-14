@@ -11,5 +11,6 @@ public class Constant {
     public static int ranks = 8;
     public static int files = 8;
     public static Color[] boardColor = {Color.GREEN, Color.GRAY};
+    public static Color[] pieceColor = {Color.WHITE, Color.BLACK};
 
 }
