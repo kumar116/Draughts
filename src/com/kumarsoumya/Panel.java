@@ -5,14 +5,17 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
-public class Panel extends JPanel {
+public class Panel extends JPanel implements MouseListener {
 
     private static final long serialVersionUID = 1L;
 
     private Logic game = new Logic();
 
     public Panel() {
+        addMouseListener(this);
         setBorder(BorderFactory.createLineBorder(Color.black));
     }
 
@@ -44,9 +47,33 @@ public class Panel extends JPanel {
                             piece.getWidth(), piece.getHeight());
                 }
 
+                if (tile.isSelected()) {
+                    g.setColor(Color.WHITE);
+                    g.drawRect(file * tile.getWidth(), rank * tile.getHeight(), tile.getWidth() - 1, tile.getHeight() - 1);
+                }
+
                 g.setColor(saveColor);
             }
         }
+    }
+
+    public void mousePressed(MouseEvent e) { }
+
+    public void mouseReleased(MouseEvent e) { }
+
+    public void mouseEntered(MouseEvent e) { }
+
+    public void mouseExited(MouseEvent e) { }
+
+    public void mouseClicked(MouseEvent e) {
+        int rank = game.getRank(e.getY());
+        int file = game.getFile(e.getX());
+
+        game.clearSelection();
+        game.clearMoves();
+        game.selectMoves(rank, file);
+
+        repaint();
     }
 
 }

@@ -4,6 +4,8 @@ import java.awt.Color;
 
 public class Tile {
 
+    private boolean selected = false;
+
     private final Color color;
 
     private int width;
@@ -15,6 +17,14 @@ public class Tile {
         width =  Constant.size.width / Constant.files;
         height =  Constant.size.height / Constant.ranks;
         this.color = color;
+    }
+
+    public boolean isSelected() {
+        return this.selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     public Color getColor() {
