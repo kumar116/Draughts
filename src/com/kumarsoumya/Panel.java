@@ -69,9 +69,17 @@ public class Panel extends JPanel implements MouseListener {
         int rank = game.getRank(e.getY());
         int file = game.getFile(e.getX());
 
-        game.clearSelection();
+        boolean canPlayMoveTo = false;
+        if (game.canPlayMoveTo(rank, file)) {
+            canPlayMoveTo = game.playMoveTo(rank, file);
+        }
+
         game.clearMoves();
-        game.selectMoves(rank, file);
+        game.clearSelection();
+
+        if (!canPlayMoveTo) {
+            game.selectMoves(rank, file);
+        }
 
         repaint();
     }

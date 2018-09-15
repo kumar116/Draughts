@@ -12,7 +12,12 @@ public class Logic {
 
     private static Point firstPos = null;
 
-    public Logic() { }
+    private Player playerOne = new Player(Side.WHITE);
+    private Player playerTwo = new Player(Side.BLACK);
+
+    public Logic() {
+        playerOne.setTurn(true);
+    }
 
     public Board getBoard() {
         return board;
@@ -33,18 +38,24 @@ public class Logic {
     }
 
     public void selectMoves(int rank, int file) {
-        selectMoves(rank, file, true);
-        selectMoves(rank, file, false);
+        Tile tile = board.getTile(rank, file);
+        if (tile.isOccupied()) {
+            if (playerOne.isTurn() && tile.getPiece().getSide() != playerOne.getSide()
+                || playerTwo.isTurn() && tile.getPiece().getSide() != playerTwo.getSide()) {
+                return;
+            }
+            selectMoves(rank, file, true);
+            selectMoves(rank, file, false);
+        }
     }
 
-    public void selectMoves(int rank, int file, boolean direction) {
+    private void selectMoves(int rank, int file, boolean direction) {
         Tile tile = board.getTile(rank, file);
+        Stack<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
+
+        diagonal.push(new Point(rank, file));
 
         if (tile.isOccupied()) {
-            Stack<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
-
-            diagonal.push(new Point(rank, file));
-
             if (firstPos == null) {
                 firstPos = diagonal.firstElement();
             }
@@ -65,6 +76,62 @@ public class Logic {
             }
         } else {
             tile.setSelected(true);
+        }
+    }
+
+    public boolean canPlayMoveTo(int rank, int file) {
+        return (canPlayMoveTo(rank, file, true) || canPlayMoveTo(rank, file, false));
+    }
+
+    private boolean canPlayMoveTo(int rank, int file, boolean direction) {
+        Tile tile = board.getTile(rank, file);
+        Stack<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
+        if (!diagonal.isEmpty()) {
+            Point lastPos = diagonal.peek();
+            Tile lastTile = board.getTile(lastPos.x, lastPos.y);
+            if (lastTile == tile) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean playMoveTo(int rank, int file) {
+        return (playMoveTo(rank, file, true) || playMoveTo(rank, file, false));
+    }
+
+    private boolean playMoveTo(int rank, int file, boolean direction) {
+        Tile tile = board.getTile(rank, file);
+        Stack<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
+        if (!diagonal.isEmpty()) {
+            Point lastPos = diagonal.peek();
+            Tile lastTile = board.getTile(lastPos.x, lastPos.y);
+            if (lastTile == tile) {
+                playMove(diagonal);
+                if (playerOne.isTurn()) {
+                    playerOne.setTurn(false);
+                    playerTwo.setTurn(true);
+                } else if (playerTwo.isTurn()) {
+                    playerTwo.setTurn(false);
+                    playerOne.setTurn(true);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void playMove(Stack<Point> moves) {
+        Point lastPos = moves.pop();
+        Tile lastTile = board.getTile(lastPos.x, lastPos.y);
+        Point firstPos = moves.firstElement();
+        Tile firstTile = board.getTile(firstPos.x, firstPos.y);
+        lastTile.setPiece(firstTile.getPiece());
+
+        while (!moves.isEmpty()) {
+            Point currPos = moves.pop();
+            Tile currTile = board.getTile(currPos.x, currPos.y);
+            currTile.setPiece(null);
         }
     }
 
