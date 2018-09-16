@@ -36,8 +36,19 @@ public class Frame extends JFrame implements ActionListener {
         gameStart.addActionListener(this);
         fileMenu.add(gameStart);
 
+        JMenu editMenu = new JMenu("Edit");
+        JMenuItem undo = new JMenuItem("Undo");
+        undo.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
+        undo.addActionListener(this);
+        editMenu.add(undo);
+
+        JMenuItem redo = new JMenuItem("Redo");
+        redo.addActionListener(this);
+        editMenu.add(redo);
+
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(fileMenu);
+        menuBar.add(editMenu);
 
         add(menuBar, BorderLayout.NORTH);
     }
@@ -52,6 +63,10 @@ public class Frame extends JFrame implements ActionListener {
             logic.clearMoves();
             logic.clearTurns();
             logic.getBoard().setupBoard();
+        } else if (actionComm.equals("Undo")) {
+            logic.undoMoves();
+        } else if (actionComm.equals("Redo")) {
+            logic.redoMoves();
         }
         panel.repaint();
     }

@@ -1,6 +1,8 @@
-package com.kumarsoumya;
+    package com.kumarsoumya;
 
 import java.awt.Point;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 
 public class Logic {
@@ -14,6 +16,10 @@ public class Logic {
 
     private Player playerOne = new Player(Side.WHITE);
     private Player playerTwo = new Player(Side.BLACK);
+
+    private List<Stack<Point>> undoMoves = new LinkedList<Stack<Point>>();
+    private List<Stack<Point>> redoMoves = new LinkedList<Stack<Point>>();
+    private Stack<Piece> removedPieces = new Stack<Piece>();
 
     public Logic() {
         playerOne.setTurn(true);
@@ -40,6 +46,16 @@ public class Logic {
     public void clearTurns() {
         playerOne.setTurn(true);
         playerTwo.setTurn(false);
+    }
+
+    private void reverseTurns() {
+        if (playerOne.isTurn()) {
+            playerOne.setTurn(false);
+            playerTwo.setTurn(true);
+        } else if (playerTwo.isTurn()) {
+            playerTwo.setTurn(false);
+            playerOne.setTurn(true);
+        }
     }
 
     public void selectMoves(int rank, int file) {
@@ -112,14 +128,12 @@ public class Logic {
             Point lastPos = diagonal.peek();
             Tile lastTile = board.getTile(lastPos.x, lastPos.y);
             if (lastTile == tile) {
+                Stack<Point> diagonalClone = new Stack<Point>();
+                diagonalClone.addAll(diagonal);
+                undoMoves.add(diagonalClone);
+
                 playMove(diagonal);
-                if (playerOne.isTurn()) {
-                    playerOne.setTurn(false);
-                    playerTwo.setTurn(true);
-                } else if (playerTwo.isTurn()) {
-                    playerTwo.setTurn(false);
-                    playerOne.setTurn(true);
-                }
+
                 return true;
             }
         }
@@ -127,6 +141,11 @@ public class Logic {
     }
 
     private void playMove(Stack<Point> moves) {
+        playMove(moves, false);
+    }
+
+    private void playMove(Stack<Point> moves, boolean reverse) {
+        reverseTurns();
         Point lastPos = moves.pop();
         Tile lastTile = board.getTile(lastPos.x, lastPos.y);
         Point firstPos = moves.firstElement();
@@ -136,7 +155,39 @@ public class Logic {
         while (!moves.isEmpty()) {
             Point currPos = moves.pop();
             Tile currTile = board.getTile(currPos.x, currPos.y);
+            if (currTile != firstTile) {
+                if (reverse) {
+                    currTile.setPiece(removedPieces.pop());
+                    continue;
+                } else {
+                    removedPieces.push(currTile.getPiece());
+                }
+            }
             currTile.setPiece(null);
+        }
+    }
+
+    public void undoMoves() {
+        if (!undoMoves.isEmpty()) {
+            Stack<Point> lastMove = undoMoves.remove(undoMoves.size() - 1);
+            Stack<Point> lastMoveClone = new Stack<Point>();
+            lastMoveClone.addAll(lastMove);
+            redoMoves.add(lastMoveClone);
+            Stack<Point> reverseMoves = new Stack<Point>();
+            while (!lastMove.isEmpty()) {
+                reverseMoves.push(lastMove.pop());
+            }
+            playMove(reverseMoves, true);
+        }
+    }
+
+    public void redoMoves() {
+        if (!redoMoves.isEmpty()) {
+            Stack<Point> lastMove = redoMoves.remove(redoMoves.size() - 1);
+            Stack<Point> lastMoveClone = new Stack<Point>();
+            lastMoveClone.addAll(lastMove);
+            undoMoves.add(lastMoveClone);
+            playMove(lastMove);
         }
     }
 
