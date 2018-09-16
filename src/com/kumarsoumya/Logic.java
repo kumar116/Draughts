@@ -37,6 +37,11 @@ public class Logic {
         diagonalRight.clear();
     }
 
+    public void clearTurns() {
+        playerOne.setTurn(true);
+        playerTwo.setTurn(false);
+    }
+
     public void selectMoves(int rank, int file) {
         Tile tile = board.getTile(rank, file);
         if (tile.isOccupied()) {
