@@ -1,9 +1,19 @@
 package com.kumarsoumya;
 
 import java.awt.BorderLayout;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.List;
+import java.util.Stack;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -46,11 +56,61 @@ public class Frame extends JFrame implements ActionListener {
         redo.addActionListener(this);
         editMenu.add(redo);
 
+        JMenuItem saveGame = new JMenuItem("Save Game");
+        saveGame.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
+        saveGame.addActionListener(this);
+        fileMenu.add(saveGame);
+
+        JMenuItem loadGame = new JMenuItem("Load Game");
+        loadGame.addActionListener(this);
+        fileMenu.add(loadGame);
+
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
 
         add(menuBar, BorderLayout.NORTH);
+    }
+
+    public void saveGame() {
+        JFileChooser fileChooser = new JFileChooser();
+        if (fileChooser.showSaveDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
+          File file = fileChooser.getSelectedFile();
+          Logic logic = panel.getLogic();
+          try {
+              ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(file));
+              outStream.writeObject(logic.getUndoMoves());
+              outStream.writeObject(logic.getRedoMoves());
+              outStream.writeObject(logic.getRemovedPieces());
+              outStream.close();
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+        }
+    }
+
+    public void loadGame() {
+        JFileChooser fileChooser=new JFileChooser();
+        if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            Logic logic = panel.getLogic();
+            try {
+                ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(file));
+                logic.setUndoMoves((List<Stack<Point>>) inStream.readObject());
+                logic.setRedoMoves((List<Stack<Point>>) inStream.readObject());
+                logic.setRemovedPieces((Stack<Piece>) inStream.readObject());
+                inStream.close();
+
+                List<Stack<Point>> diagonal = logic.getUndoMoves();
+                for (int i = 0; i < diagonal.size(); i++) {
+                    Stack<Point> moves = diagonal.get(i);
+                    logic.playMove(moves, false, false);
+                }
+                panel.repaint();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -63,6 +123,10 @@ public class Frame extends JFrame implements ActionListener {
             logic.clearMoves();
             logic.clearTurns();
             logic.getBoard().setupBoard();
+        } else if (actionComm.equals("Save Game")) {
+            saveGame();
+        } else if (actionComm.equals("Load Game")) {
+            loadGame();
         } else if (actionComm.equals("Undo")) {
             logic.undoMoves();
         } else if (actionComm.equals("Redo")) {

@@ -48,6 +48,30 @@ public class Logic {
         playerTwo.setTurn(false);
     }
 
+    public List<Stack<Point>> getUndoMoves() {
+        return undoMoves;
+    }
+
+    public void setUndoMoves(List<Stack<Point>> undoMoves) {
+        this.undoMoves = undoMoves;
+    }
+
+    public List<Stack<Point>> getRedoMoves() {
+        return redoMoves;
+    }
+
+    public void setRedoMoves(List<Stack<Point>> redoMoves) {
+        this.redoMoves = redoMoves;
+    }
+
+    public Stack<Piece> getRemovedPieces() {
+        return removedPieces;
+    }
+
+    public void setRemovedPieces(Stack<Piece> removedPieces) {
+        this.removedPieces = removedPieces;
+    }
+
     private void reverseTurns() {
         if (playerOne.isTurn()) {
             playerOne.setTurn(false);
@@ -128,9 +152,6 @@ public class Logic {
             Point lastPos = diagonal.peek();
             Tile lastTile = board.getTile(lastPos.x, lastPos.y);
             if (lastTile == tile) {
-                Stack<Point> diagonalClone = new Stack<Point>();
-                diagonalClone.addAll(diagonal);
-                undoMoves.add(diagonalClone);
 
                 playMove(diagonal);
 
@@ -140,11 +161,17 @@ public class Logic {
         return false;
     }
 
-    private void playMove(Stack<Point> moves) {
-        playMove(moves, false);
+    public void playMove(Stack<Point> moves) {
+        playMove(moves, false, true);
     }
 
-    private void playMove(Stack<Point> moves, boolean reverse) {
+    public void playMove(Stack<Point> moves, boolean reverse, boolean save) {
+        if (save) {
+            Stack<Point> movesClone = new Stack<Point>();
+            movesClone.addAll(moves);
+            undoMoves.add(movesClone);
+        }
+
         reverseTurns();
         Point lastPos = moves.pop();
         Tile lastTile = board.getTile(lastPos.x, lastPos.y);
@@ -177,7 +204,7 @@ public class Logic {
             while (!lastMove.isEmpty()) {
                 reverseMoves.push(lastMove.pop());
             }
-            playMove(reverseMoves, true);
+            playMove(reverseMoves, true, false);
         }
     }
 

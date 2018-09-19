@@ -1,10 +1,13 @@
 package com.kumarsoumya;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 enum Side { WHITE, BLACK };
 
-public class Piece {
+public class Piece implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int width, height;
 
