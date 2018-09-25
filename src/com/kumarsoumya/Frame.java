@@ -11,7 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Stack;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -89,6 +89,7 @@ public class Frame extends JFrame implements ActionListener {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void loadGame() {
         JFileChooser fileChooser=new JFileChooser();
         if (fileChooser.showOpenDialog(fileChooser) == JFileChooser.APPROVE_OPTION) {
@@ -96,14 +97,14 @@ public class Frame extends JFrame implements ActionListener {
             Logic logic = panel.getLogic();
             try {
                 ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(file));
-                logic.setUndoMoves((List<Stack<Point>>) inStream.readObject());
-                logic.setRedoMoves((List<Stack<Point>>) inStream.readObject());
+                logic.setUndoMoves((LinkedList<LinkedList<Point>>) inStream.readObject());
+                logic.setRedoMoves((LinkedList<LinkedList<Point>>) inStream.readObject());
                 logic.setRemovedPieces((Stack<Piece>) inStream.readObject());
                 inStream.close();
 
-                List<Stack<Point>> diagonal = logic.getUndoMoves();
+                LinkedList<LinkedList<Point>> diagonal = logic.getUndoMoves();
                 for (int i = 0; i < diagonal.size(); i++) {
-                    Stack<Point> moves = diagonal.get(i);
+                    LinkedList<Point> moves = diagonal.get(i);
                     logic.playMove(moves, false, false);
                 }
                 panel.repaint();

@@ -2,23 +2,22 @@
 
 import java.awt.Point;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Stack;
 
 public class Logic {
 
     private Board board = new Board();
 
-    private Stack<Point> diagonalLeft = new Stack<Point>();
-    private Stack<Point> diagonalRight = new Stack<Point>();
+    private LinkedList<Point> diagonalLeft = new LinkedList<Point>();
+    private LinkedList<Point> diagonalRight = new LinkedList<Point>();
 
     private static Point firstPos = null;
 
     private Player playerOne = new Player(Side.WHITE);
     private Player playerTwo = new Player(Side.BLACK);
 
-    private List<Stack<Point>> undoMoves = new LinkedList<Stack<Point>>();
-    private List<Stack<Point>> redoMoves = new LinkedList<Stack<Point>>();
+    private LinkedList<LinkedList<Point>> undoMoves = new LinkedList<LinkedList<Point>>();
+    private LinkedList<LinkedList<Point>> redoMoves = new LinkedList<LinkedList<Point>>();
     private Stack<Piece> removedPieces = new Stack<Piece>();
 
     public Logic() {
@@ -39,8 +38,12 @@ public class Logic {
 
     public void clearMoves() {
         firstPos = null;
-        diagonalLeft.clear();
-        diagonalRight.clear();
+        while (!diagonalLeft.isEmpty()) {
+            diagonalLeft.remove();
+        }
+        while (!diagonalRight.isEmpty()) {
+            diagonalRight.remove();
+        }
     }
 
     public void clearTurns() {
@@ -48,19 +51,19 @@ public class Logic {
         playerTwo.setTurn(false);
     }
 
-    public List<Stack<Point>> getUndoMoves() {
+    public LinkedList<LinkedList<Point>> getUndoMoves() {
         return undoMoves;
     }
 
-    public void setUndoMoves(List<Stack<Point>> undoMoves) {
+    public void setUndoMoves(LinkedList<LinkedList<Point>> undoMoves) {
         this.undoMoves = undoMoves;
     }
 
-    public List<Stack<Point>> getRedoMoves() {
+    public LinkedList<LinkedList<Point>> getRedoMoves() {
         return redoMoves;
     }
 
-    public void setRedoMoves(List<Stack<Point>> redoMoves) {
+    public void setRedoMoves(LinkedList<LinkedList<Point>> redoMoves) {
         this.redoMoves = redoMoves;
     }
 
@@ -96,20 +99,22 @@ public class Logic {
 
     private void selectMoves(int rank, int file, boolean direction) {
         Tile tile = board.getTile(rank, file);
-        Stack<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
+        LinkedList<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
 
-        diagonal.push(new Point(rank, file));
+        diagonal.add(board.getPosition(rank, file));
 
         if (tile.isOccupied()) {
             if (firstPos == null) {
-                firstPos = diagonal.firstElement();
+                firstPos = diagonal.getFirst();
             }
             Side originalSide = board.getTile(firstPos.x, firstPos.y).getPiece().getSide();
 
             if (diagonal.size() > 1) {
                 Side currSide = tile.getPiece().getSide();
                 if (currSide == originalSide) {
-                    diagonal.clear();
+                    while (!diagonal.isEmpty()) {
+                        diagonal.remove();
+                    }
                     return;
                 }
             }
@@ -129,12 +134,10 @@ public class Logic {
     }
 
     private boolean canPlayMoveTo(int rank, int file, boolean direction) {
-        Tile tile = board.getTile(rank, file);
-        Stack<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
+        LinkedList<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
         if (!diagonal.isEmpty()) {
-            Point lastPos = diagonal.peek();
-            Tile lastTile = board.getTile(lastPos.x, lastPos.y);
-            if (lastTile == tile) {
+            Point lastPos = diagonal.getLast();
+            if (rank == lastPos.x && file == lastPos.y) {
                 return true;
             }
         }
@@ -146,41 +149,38 @@ public class Logic {
     }
 
     private boolean playMoveTo(int rank, int file, boolean direction) {
-        Tile tile = board.getTile(rank, file);
-        Stack<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
+        LinkedList<Point> diagonal = (direction) ? diagonalLeft : diagonalRight;
         if (!diagonal.isEmpty()) {
-            Point lastPos = diagonal.peek();
-            Tile lastTile = board.getTile(lastPos.x, lastPos.y);
-            if (lastTile == tile) {
-
+            Point lastPos = diagonal.getLast();
+            if (rank == lastPos.x && file == lastPos.y) {
                 playMove(diagonal);
-
                 return true;
             }
         }
         return false;
     }
 
-    public void playMove(Stack<Point> moves) {
+    public void playMove(LinkedList<Point> moves) {
         playMove(moves, false, true);
     }
 
-    public void playMove(Stack<Point> moves, boolean reverse, boolean save) {
+    @SuppressWarnings("unchecked")
+    public void playMove(LinkedList<Point> moves, boolean reverse, boolean save) {
         if (save) {
-            Stack<Point> movesClone = new Stack<Point>();
-            movesClone.addAll(moves);
-            undoMoves.add(movesClone);
+            undoMoves.add((LinkedList<Point>) moves.clone());
         }
 
         reverseTurns();
-        Point lastPos = moves.pop();
+
+        Point lastPos = reverse ? moves.getFirst() : moves.getLast();
         Tile lastTile = board.getTile(lastPos.x, lastPos.y);
-        Point firstPos = moves.firstElement();
+        Point firstPos = reverse ? moves.getLast() : moves.getFirst();
         Tile firstTile = board.getTile(firstPos.x, firstPos.y);
         lastTile.setPiece(firstTile.getPiece());
 
-        while (!moves.isEmpty()) {
-            Point currPos = moves.pop();
+        for (int i = 0; i < moves.size() - 1; i++) {
+            int index = reverse ? moves.size() - i - 1: i;
+            Point currPos = moves.get(index);
             Tile currTile = board.getTile(currPos.x, currPos.y);
             if (currTile != firstTile) {
                 if (reverse) {
@@ -196,24 +196,16 @@ public class Logic {
 
     public void undoMoves() {
         if (!undoMoves.isEmpty()) {
-            Stack<Point> lastMove = undoMoves.remove(undoMoves.size() - 1);
-            Stack<Point> lastMoveClone = new Stack<Point>();
-            lastMoveClone.addAll(lastMove);
-            redoMoves.add(lastMoveClone);
-            Stack<Point> reverseMoves = new Stack<Point>();
-            while (!lastMove.isEmpty()) {
-                reverseMoves.push(lastMove.pop());
-            }
-            playMove(reverseMoves, true, false);
+            LinkedList<Point> lastMove = undoMoves.remove(undoMoves.size() - 1);
+            redoMoves.add(lastMove);
+            playMove(lastMove, true, false);
         }
     }
 
     public void redoMoves() {
         if (!redoMoves.isEmpty()) {
-            Stack<Point> lastMove = redoMoves.remove(redoMoves.size() - 1);
-            Stack<Point> lastMoveClone = new Stack<Point>();
-            lastMoveClone.addAll(lastMove);
-            undoMoves.add(lastMoveClone);
+            LinkedList<Point> lastMove = redoMoves.remove(redoMoves.size() - 1);
+            undoMoves.add(lastMove);
             playMove(lastMove);
         }
     }

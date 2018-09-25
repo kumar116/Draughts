@@ -1,6 +1,7 @@
 package com.kumarsoumya;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 public class Board {
 
     private Tile[][] tiles = new Tile[Constant.ranks][Constant.files];
+    private Point[][] positions = new Point[Constant.ranks][Constant.files];
 
     private List<Tile> tileObjs = new LinkedList<Tile>();
 
@@ -16,6 +18,7 @@ public class Board {
     public Board() {
         initializeTiles();
         initializePieces();
+        initializePositions();
         setupBoard();
     }
 
@@ -42,6 +45,14 @@ public class Board {
         }
     }
 
+    private void initializePositions() {
+        for (int rank = 0; rank < Constant.ranks; rank++) {
+            for (int file = 0; file < Constant.files; file++) {
+                positions[rank][file] = new Point(rank, file);
+            }
+        }
+    }
+
     public void setupBoard() {
 
         Iterator<Tile> tileIterator = tileObjs.iterator();
@@ -63,6 +74,10 @@ public class Board {
 
     public Tile getTile(int rank, int file) {
         return tiles[rank][file];
+    }
+
+    public Point getPosition(int rank, int file) {
+        return positions[rank][file];
     }
 
 }
