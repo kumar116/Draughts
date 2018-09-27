@@ -70,6 +70,10 @@ public class Panel extends JPanel implements MouseListener {
     public void mouseExited(MouseEvent e) { }
 
     public void mouseClicked(MouseEvent e) {
+        if (game.isGameOver()) {
+            return;
+        }
+
         int rank = game.getRank(e.getY());
         int file = game.getFile(e.getX());
 

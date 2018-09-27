@@ -24,6 +24,8 @@ public class Logic {
     private LinkedList<LinkedList<Point>> redoMoves = new LinkedList<LinkedList<Point>>();
     private Stack<Piece> removedPieces = new Stack<Piece>();
 
+    private boolean gameOver = false;
+
     public Logic() {
         playerOne.setTurn(true);
     }
@@ -225,6 +227,14 @@ public class Logic {
     @Override
     public String toString() {
         return created;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
     }
 
 }

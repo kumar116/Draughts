@@ -50,50 +50,57 @@ public class Frame extends JFrame implements ActionListener {
         menuBar.repaint();
     }
 
-    public void initializeMenu() {
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem gameStart = new JMenuItem("New Game");
-        gameStart.setAccelerator(KeyStroke.getKeyStroke('N', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
-        gameStart.addActionListener(this);
-        fileMenu.add(gameStart);
+    private void initializeMenuItem(JMenu menu, String[] menuItemNames) {
+        for (String menuItemName : menuItemNames) {
+            JMenuItem subMenuItem = new JMenuItem(menuItemName);
+            subMenuItem.addActionListener(this);
 
-        JMenuItem gameReset = new JMenuItem("Reset");
-        gameReset.addActionListener(this);
-        fileMenu.add(gameReset);
-
-        JMenu editMenu = new JMenu("Edit");
-        JMenuItem undo = new JMenuItem("Undo");
-        undo.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
-        undo.addActionListener(this);
-        editMenu.add(undo);
-
-        JMenuItem redo = new JMenuItem("Redo");
-        redo.addActionListener(this);
-        editMenu.add(redo);
-
-        JMenuItem saveGame = new JMenuItem("Save Game");
-        saveGame.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
-        saveGame.addActionListener(this);
-        fileMenu.add(saveGame);
-
-        JMenuItem loadGame = new JMenuItem("Load Game");
-        loadGame.addActionListener(this);
-        fileMenu.add(loadGame);
-
-        JMenu settingMenu = new JMenu("Settings");
-        JMenu sizeMenu = new JMenu("Size");
-        String[] sizes = {"8", "12", "16"};
-        for (int i = 0; i < sizes.length; i++) {
-            JMenuItem subSize = new JMenuItem(sizes[i]);
-            subSize.addActionListener(this);
-            sizeMenu.add(subSize);
+            switch (menuItemName) {
+                case "New Game":
+                    subMenuItem.setAccelerator(KeyStroke.getKeyStroke('N', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
+                    break;
+                case "Save Game":
+                    subMenuItem.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
+                    break;
+                case "Undo":
+                    subMenuItem.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
+                    break;
+                case "Size":
+                    String[] subMenuItemNames = {"8", "12", "16"};
+                    JMenu subMenu = new JMenu(menuItemName);
+                    menu.add(subMenu);
+                    initializeMenuItem(subMenu, subMenuItemNames);
+                default:
+                    break;
+            }
+            if (menuItemName != "Size") {
+                menu.add(subMenuItem);
+            }
         }
+    }
 
-        settingMenu.add(sizeMenu);
-
-        menuBar.add(fileMenu);
-        menuBar.add(editMenu);
-        menuBar.add(settingMenu);
+    public void initializeMenu() {
+        String[] menuNames = {"File", "Edit", "Settings"};
+        String[] menuItemNames;
+        for (String menuName : menuNames) {
+            switch (menuName) {
+                case "File":
+                    menuItemNames = "New Game,Reset,Save Game,Load Game,Resign".split(",");
+                    break;
+                case "Edit":
+                    menuItemNames = "Redo,Undo".split(",");
+                    break;
+                case "Settings":
+                    menuItemNames = new String[] {"Size"};
+                    break;
+                default:
+                    menuItemNames = new String[] { };
+                    break;
+            }
+            JMenu menu = new JMenu(menuName);
+            initializeMenuItem(menu, menuItemNames);
+            menuBar.add(menu);
+        }
 
         menuBar.add(sessionMenu);
 
@@ -169,9 +176,9 @@ public class Frame extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String actionComm = e.getActionCommand();
         Logic logic = panel.getLogic();
 
+        String actionComm = e.getActionCommand();
         if (actionComm.equals("New Game")) {
             prepareSession(Constant.ranks);
             setSession(new Logic());
@@ -184,6 +191,8 @@ public class Frame extends JFrame implements ActionListener {
             saveGame();
         } else if (actionComm.equals("Load Game")) {
             loadGame();
+        } else if (actionComm.equals("Resign")) {
+            logic.setGameOver(true);
         } else if (actionComm.equals("Undo")) {
             logic.undoMoves();
         } else if (actionComm.equals("Redo")) {
