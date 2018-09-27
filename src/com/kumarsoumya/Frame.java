@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -65,6 +66,9 @@ public class Frame extends JFrame implements ActionListener {
                 case "Undo":
                     subMenuItem.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
                     break;
+                case "Exit":
+                    subMenuItem.setAccelerator(KeyStroke.getKeyStroke('s', KeyEvent.ALT_MASK));
+                    break;
                 case "Size":
                     String[] subMenuItemNames = {"8", "12", "16"};
                     JMenu subMenu = new JMenu(menuItemName);
@@ -85,7 +89,7 @@ public class Frame extends JFrame implements ActionListener {
         for (String menuName : menuNames) {
             switch (menuName) {
                 case "File":
-                    menuItemNames = "New Game,Reset,Save Game,Load Game,Resign".split(",");
+                    menuItemNames = "New Game,Reset,Save Game,Load Game,Resign,Exit".split(",");
                     break;
                 case "Edit":
                     menuItemNames = "Redo,Undo".split(",");
@@ -193,6 +197,8 @@ public class Frame extends JFrame implements ActionListener {
             loadGame();
         } else if (actionComm.equals("Resign")) {
             logic.setGameOver(true);
+        } else if (actionComm.equals("Exit")) {
+            dispose();
         } else if (actionComm.equals("Undo")) {
             logic.undoMoves();
         } else if (actionComm.equals("Redo")) {
