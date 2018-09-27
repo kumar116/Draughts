@@ -57,6 +57,10 @@ public class Frame extends JFrame implements ActionListener {
         gameStart.addActionListener(this);
         fileMenu.add(gameStart);
 
+        JMenuItem gameReset = new JMenuItem("Reset");
+        gameReset.addActionListener(this);
+        fileMenu.add(gameReset);
+
         JMenu editMenu = new JMenu("Edit");
         JMenuItem undo = new JMenuItem("Undo");
         undo.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask()));
@@ -171,6 +175,11 @@ public class Frame extends JFrame implements ActionListener {
         if (actionComm.equals("New Game")) {
             prepareSession(Constant.ranks);
             setSession(new Logic());
+        } else if (actionComm.equals("Reset")) {
+            logic.clearSelection();
+            logic.clearMoves();
+            logic.clearTurns();
+            logic.getBoard().setupBoard();
         } else if (actionComm.equals("Save Game")) {
             saveGame();
         } else if (actionComm.equals("Load Game")) {
