@@ -1,10 +1,14 @@
     package com.kumarsoumya;
 
 import java.awt.Point;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Stack;
 
 public class Logic {
+
+    private String created = new SimpleDateFormat("MM-dd-yy HH:mm:ss").format(new Date());
 
     private Board board = new Board();
 
@@ -216,6 +220,11 @@ public class Logic {
 
     public int getFile(int x) {
         return  (x / (Constant.size.width / Constant.files));
+    }
+
+    @Override
+    public String toString() {
+        return created;
     }
 
 }

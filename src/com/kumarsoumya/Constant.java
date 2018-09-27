@@ -7,10 +7,9 @@ public class Constant {
 
     private Constant() { }
 
+    public static int ranks = 8, files = 8;
     public static Dimension size = new Dimension(400, 400);
-    public static int ranks = 8;
-    public static int files = 8;
-    public static Color[] boardColor = {Color.GREEN, Color.GRAY};
-    public static Color[] pieceColor = {Color.WHITE, Color.BLACK};
+    public static Color[] boardColor = {Color.GREEN, Color.GRAY},
+                          pieceColor = {Color.WHITE, Color.BLACK};
 
 }

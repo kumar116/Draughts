@@ -27,6 +27,10 @@ public class Panel extends JPanel implements MouseListener {
         return game;
     }
 
+    public void setLogic(Logic game) {
+        this.game = game;
+    }
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 

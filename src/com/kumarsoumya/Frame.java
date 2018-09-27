@@ -11,7 +11,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Stack;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -23,20 +25,29 @@ import javax.swing.KeyStroke;
 public class Frame extends JFrame implements ActionListener {
 
     private static final long serialVersionUID = 1L;
+    private HashMap<Logic, Integer> sessions = new HashMap<Logic, Integer>();
+    private HashMap<String, JMenuItem> sessionItems = new HashMap<String, JMenuItem>();
     private Panel panel;
+    private JMenuBar menuBar = new JMenuBar();
+    private JMenu sessionMenu = new JMenu("Sessions");
 
     public Frame() {
-        setTitle("American Checkers");
+        setTitle("Draughts");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
         setSize(Constant.size);
-        initializeMenu();
 
         panel = new Panel();
         add(panel, BorderLayout.SOUTH);
+
+        initializeMenu();
+
         pack();
         setResizable(false);
         setVisible(true);
+    }
+
+    public void setupSessionMenu() {
+        menuBar.repaint();
     }
 
     public void initializeMenu() {
@@ -65,11 +76,49 @@ public class Frame extends JFrame implements ActionListener {
         loadGame.addActionListener(this);
         fileMenu.add(loadGame);
 
-        JMenuBar menuBar = new JMenuBar();
+        JMenu settingMenu = new JMenu("Settings");
+        JMenu sizeMenu = new JMenu("Size");
+        String[] sizes = {"8", "12", "16"};
+        for (int i = 0; i < sizes.length; i++) {
+            JMenuItem subSize = new JMenuItem(sizes[i]);
+            subSize.addActionListener(this);
+            sizeMenu.add(subSize);
+        }
+
+        settingMenu.add(sizeMenu);
+
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
+        menuBar.add(settingMenu);
+
+        menuBar.add(sessionMenu);
 
         add(menuBar, BorderLayout.NORTH);
+    }
+
+    private void removeSession(Logic logic) {
+        sessions.remove(logic);
+        sessionMenu.remove(sessionItems.get(logic.toString()));
+    }
+
+    private void saveSession() {
+        Logic currLogic = panel.getLogic();
+        sessions.put(currLogic, Constant.ranks);
+
+        JMenuItem sessionItem = new JMenuItem(currLogic.toString());
+        sessionItems.put(currLogic.toString(), sessionItem);
+        sessionItem.addActionListener(this);
+        sessionMenu.add(sessionItem);
+    }
+
+    private void prepareSession(int multiple) {
+        saveSession();
+        Constant.ranks = Constant.files = multiple;
+    }
+
+    private void setSession(Logic logic) {
+        panel.setLogic(logic);
+        setupSessionMenu();
     }
 
     public void saveGame() {
@@ -120,10 +169,8 @@ public class Frame extends JFrame implements ActionListener {
         Logic logic = panel.getLogic();
 
         if (actionComm.equals("New Game")) {
-            logic.clearSelection();
-            logic.clearMoves();
-            logic.clearTurns();
-            logic.getBoard().setupBoard();
+            prepareSession(Constant.ranks);
+            setSession(new Logic());
         } else if (actionComm.equals("Save Game")) {
             saveGame();
         } else if (actionComm.equals("Load Game")) {
@@ -132,7 +179,26 @@ public class Frame extends JFrame implements ActionListener {
             logic.undoMoves();
         } else if (actionComm.equals("Redo")) {
             logic.redoMoves();
+        } else if (actionComm.equals("8") || actionComm.equals("12") || actionComm.equals("16")) {
+            int multiple = Integer.valueOf(actionComm);
+            prepareSession(multiple);
+            setSession(new Logic());
+        } else {
+            Logic useLogic = null;
+            Set<Logic> logics = sessions.keySet();
+            for (Logic storedLogic: logics) {
+                if (actionComm.equals(storedLogic.toString())) {
+                    useLogic = storedLogic;
+                }
+            }
+            if (useLogic != null) {
+                int multiple = sessions.get(useLogic);
+                removeSession(useLogic);
+                prepareSession(multiple);
+                setSession(useLogic);
+            }
         }
+
         panel.repaint();
     }
 
