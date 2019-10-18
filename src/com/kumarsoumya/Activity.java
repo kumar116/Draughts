@@ -1,4 +1,4 @@
-package com.kumarsoumya;
+package com.kumarsoumya.checkers;
 
 public class Activity {
 

@@ -1,4 +1,4 @@
-package com.kumarsoumya;
+package com.kumarsoumya.checker;
 
 import java.awt.Color;
 import java.io.Serializable;

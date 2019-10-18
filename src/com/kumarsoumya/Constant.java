@@ -1,4 +1,4 @@
-package com.kumarsoumya;
+package com.kumarsoumya.checkers;
 
 import java.awt.Color;
 import java.awt.Dimension;

@@ -1,4 +1,4 @@
-package com.kumarsoumya;
+package com.kumarsoumya.checkers;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
